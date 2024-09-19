@@ -1,25 +1,56 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { axios } from "axios";
+import axios from "axios";
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [user, setUser] = React.useState({
     email: "",
     password: "",
     username: "",
   });
 
+  const [buttonDisabled, setButtonDisabled] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+
   const onSignup = async () => {
     console.log("Signup clicked");
+
+    try {
+      setLoading(true);
+
+      const response = await axios.post("/api/users/signup", user);
+
+      console.log("Signup Success", response.data);
+
+      router.push("/login");
+    } catch (error: any) {
+      console.log("Signup failed", error.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    if (
+      user.email.length > 0 &&
+      user.username.length > 0 &&
+      user.password.length > 0
+    ) {
+      setButtonDisabled(false);
+    } else {
+      setButtonDisabled(true);
+    }
+  }, [user]);
 
   return (
     <div className="flex flex-col items-center justify-center py-8 min-h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold text-gray-800 mb-6">Signup</h1>
-      {/* <hr className="w-1/2 border-gray-300 mb-6" /> */}
+      <h1 className="text-4xl font-bold text-gray-800 mb-6">
+        {loading ? "Processing" : "Signup"}
+      </h1>
 
       <form className="w-full max-w-md bg-white p-6 shadow-lg rounded-lg">
         <div className="mb-4">
@@ -92,7 +123,7 @@ export default function SignUpPage() {
           onClick={onSignup}
           className="w-full p-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 transition duration-200 ease-in-out"
         >
-          Sign Up
+          {buttonDisabled ? "No SignUp" : "Sign up"}
         </button>
       </form>
       <Link
